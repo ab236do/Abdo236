@@ -19,7 +19,7 @@ h2{font-size:19px;margin:0}
 .lbl{color:var(--mut);font-size:15px}
 .val{font-size:34px;font-weight:700;margin-top:6px}
 .val.sm{font-size:26px}
-.gold{color:var(--gold)}.tl{color:var(--teal)}.neg{color:var(--red)}
+.gold{color:var(--gold)}.tl{color:var(--teal)}.neg{color:var(--red)}.pos{color:#5fd38d}
 .btn{display:block;width:100%;border:0;border-radius:16px;padding:17px 10px;font:inherit;font-size:18px;font-weight:700;margin-bottom:12px;color:#0b1620;cursor:pointer}
 .b-teal{background:var(--teal)}.b-gold{background:var(--gold)}.b-red{background:var(--red)}
 .out{background:transparent;color:var(--teal);border:2px solid var(--teal)}
@@ -55,6 +55,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
  <div class="box"><div class="lbl">المتاح في الخزنة</div><div class="val sm" id="av"></div></div>
  <div class="box"><div class="lbl">إجمالي حسابات التجار (الدين)</div><div class="val sm gold" id="debt"></div></div>
 </div>
+
+<div class="box"><div class="lbl">صافي الخزنة بعد الدين (المتاح − الدين)</div><div class="val" id="net"></div></div>
 
 <div class="box">
  <div class="head"><h2>جدول حسابات التجار</h2><button class="btn out mini" data-a="newm">+ تاجر</button></div>
@@ -119,6 +121,7 @@ function draw(){
  $('def').textContent=cur(S.d);
  $('av').textContent=cur(S.t);sgn($('av'),S.t);
  $('debt').textContent=cur(debt);
+ const net=S.t-debt;$('net').textContent=cur(net);$('net').classList.toggle('neg',net<0);$('net').classList.toggle('pos',net>=0);
  $('mt').innerHTML=S.m.length?S.m.map(m=>`<tr><td>${f(m.c)}</td><td>${esc(m.n)}</td><td class="n">${f(m.b)}</td><td><button class="x" aria-label="حذف" onclick="del(${m.c})">×</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">لا يوجد تجار بعد. اضغط «+ تاجر» لإضافة أول تاجر.</td></tr>';
  $('names').innerHTML=S.m.map(m=>`<option value="${esc(m.n)}">`).join('');
  const q=norm($('q').value.trim()),ex=S.l.filter(x=>x.k==='exp'&&(!q||norm(x.w).includes(q))).reverse();
