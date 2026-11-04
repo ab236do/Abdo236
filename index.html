@@ -16,6 +16,7 @@ h1{font-size:26px;margin:8px 0 16px}
 h2{font-size:19px;margin:0}
 .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
 .hero{border:2px solid var(--teal)}
+.warn{border-color:var(--gold)}
 .lbl{color:var(--mut);font-size:15px}
 .val{font-size:34px;font-weight:700;margin-top:6px}
 .val.sm{font-size:26px}
@@ -32,18 +33,31 @@ th,td{padding:11px 4px;text-align:right;border-bottom:1px solid var(--line)}
 th{color:var(--mut);font-weight:400;font-size:15px}
 td.n{font-weight:700}
 .empty{color:var(--mut);text-align:center;padding:16px 0}
-.x{background:none;border:0;color:var(--red);font-size:20px;padding:4px 8px}
-.mrow{display:flex;justify-content:space-between;padding:6px 0}
+.x{background:none;border:0;color:var(--red);font-size:20px;padding:4px 8px;cursor:pointer}
+.ed{color:var(--teal)}
+.lnk{background:none;border:0;padding:0;font:inherit;color:var(--ink);text-decoration:underline dotted var(--mut);text-underline-offset:5px;cursor:pointer;text-align:right}
+.mrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0}
+.op{display:flex;align-items:center;gap:4px;padding:9px 0;border-bottom:1px solid var(--line)}
+.op .oi{flex:1;min-width:0;overflow-wrap:anywhere}
+.op .oa{font-weight:700;white-space:nowrap}
 label{display:block;margin:12px 0 6px;color:var(--mut);font-size:15px}
 input{width:100%;font:inherit;padding:14px;border:1px solid var(--line);border-radius:14px;background:#0b121b;color:var(--ink)}
 button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-dialog{border:1px solid var(--line);border-radius:18px;padding:18px;width:min(92vw,420px);background:var(--card);color:var(--ink)}
+dialog{border:1px solid var(--line);border-radius:18px;padding:18px;width:min(92vw,420px);max-height:88vh;background:var(--card);color:var(--ink)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .err{color:var(--red);min-height:22px;margin-top:8px;font-size:15px}
 .foot{display:flex;gap:10px;margin-top:14px}.foot .btn{margin:0;font-size:16px;padding:13px 8px}
 .sm2{display:flex;gap:10px;margin-top:20px}.sm2 .btn{margin:0;font-size:15px;padding:12px 6px}
-</style></head><body>
+#lock{display:none;position:fixed;inset:0;z-index:99;background:var(--bg);align-items:center;justify-content:center;padding:20px}
+html.lk #lock{display:flex}
+.lbox{width:min(92vw,360px);text-align:center}
+.lbox input{text-align:center;font-size:24px;letter-spacing:6px;margin:12px 0}
+</style>
+<script>try{if(localStorage.getItem('kafia-pin'))document.documentElement.classList.add('lk')}catch(e){}</script>
+</head><body>
 <h1>حسابات الزعيم كافية</h1>
+
+<div class="box warn" id="bk" hidden><div id="bkt" style="margin-bottom:10px"></div><button class="btn b-gold" id="bkb" style="margin:0;font-size:16px;padding:13px 8px">خد نسخة احتياطية دلوقتي</button></div>
 
 <div class="box hero"><div class="lbl">رصيد الخزنة النقدي الشامل</div><div class="val tl" id="all"></div></div>
 <button class="btn b-teal" data-a="cash">+ إضافة نقود للخزنة</button>
@@ -61,6 +75,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <div class="box">
  <div class="head"><h2>جدول حسابات التجار</h2><button class="btn out mini" data-a="newm">+ تاجر</button></div>
  <div class="g2" style="margin-bottom:6px"><button class="btn b-gold" data-a="add">+ إضافة للتاجر</button><button class="btn b-red" data-a="pay">– خصم من التاجر</button></div>
+ <div class="lbl">اضغط على اسم التاجر لعرض كشف حسابه</div>
  <table><thead><tr><th>الكود</th><th>اسم التاجر</th><th>الرصيد</th><th></th></tr></thead><tbody id="mt"></tbody></table>
 </div>
 
@@ -75,44 +90,102 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
 <div class="box"><div class="head" style="margin-bottom:8px"><h2>إجمالي عمليات الشهر</h2><span class="lbl" id="mname"></span></div><div id="mon"></div></div>
 
+<div class="box">
+ <div class="head"><h2>سجل العمليات</h2></div>
+ <button class="btn out" id="undo" style="font-size:16px;padding:13px 8px">↩ تراجع عن آخر عملية</button>
+ <div id="ops"></div>
+ <button class="btn out" id="more" style="margin:12px 0 0;font-size:15px;padding:11px 8px" hidden></button>
+</div>
+
 <div class="sm2"><button class="btn out" id="exp">نسخة احتياطية</button><button class="btn out" id="imp">استرجاع</button></div>
+<button class="btn out" id="pinb" data-a="pin" style="margin-top:10px;font-size:15px;padding:12px 6px"></button>
 <input type="file" id="file" accept=".json" hidden>
 
 <dialog id="dlg"><form method="dialog" onsubmit="return false"><h2 id="dt"></h2><div id="flds"></div><div class="err" id="err"></div>
 <div class="foot"><button class="btn b-teal" id="ok">حفظ</button><button type="button" class="btn out" id="cx">إلغاء</button></div></form></dialog>
+
+<dialog id="sdlg"><h2 id="st"></h2><div id="sb" style="margin-top:10px"></div>
+<div class="foot"><button class="btn out" id="sx">إغلاق</button></div></dialog>
+
 <datalist id="names"></datalist>
 
+<div id="lock"><div class="lbox"><h1>🔒 حسابات الزعيم</h1><input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="الرقم السري"><button class="btn b-teal" id="unl">فتح</button><div class="err" id="lerr"></div></div></div>
+
 <script>
-const K='kafia-ledger-v1';
+const K='kafia-ledger-v1',PK='kafia-pin';
 let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
 S=S||{t:0,m:[],l:[],n:1};S.d=S.d||0;
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert('تعذر الحفظ على الموبايل')}};
 const $=id=>document.getElementById(id);
 const f=n=>Number(n).toLocaleString('ar-EG',{maximumFractionDigits:2});
 const cur=n=>f(n)+' ج.م';
+const fd=t=>new Date(t).toLocaleString('ar-EG',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
 const num=v=>{v=parseFloat(String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٬,\s]/g,'').replace('٫','.'));return isNaN(v)?0:v};
 const find=q=>{q=norm(q.trim());return S.m.find(x=>String(x.c)===q)||S.m.find(x=>norm(x.n)===q)||S.m.find(x=>norm(x.n).includes(q))};
-const log=(k,a,w)=>S.l.push({d:Date.now(),k,a,w});
+const log=(k,a,w,c)=>S.l.push({d:Date.now(),k,a,w,c});
+const mOf=x=>S.m.find(m=>x.c!==undefined?m.c===x.c:m.n===x.w);
+const KL={cash:'نقود للخزنة',def:'إضافة للآجل',exp:'مصروف',add:'إضافة للتاجر',pay:'خصم من التاجر'};
+/* s=1 يطبّق أثر العملية، s=-1 يلغي أثرها */
+function eff(x,s){const m=mOf(x),a=x.a*s;
+ if(x.k==='cash')S.t+=a;else if(x.k==='def')S.d+=a;else if(x.k==='exp')S.t-=a;
+ else if(x.k==='add'){if(m)m.b+=a}else if(x.k==='pay'){if(m)m.b-=a;S.t-=a}}
+
+/* قفل برقم سري (قفل راحة للشاشة، مش تشفير) */
+const pn=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim();
+const hs=s=>{s='kafia:'+s;let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0,c;i<s.length;i++){c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return String(4294967296*(2097151&h2)+(h1>>>0))};
+const getPin=()=>{try{return localStorage.getItem(PK)}catch(e){return null}};
+function lockNow(){$('dlg').close();$('sdlg').close();$('pin').value='';$('lerr').textContent='';document.documentElement.classList.add('lk')}
+$('unl').onclick=()=>{if(hs(pn($('pin').value))===getPin()){document.documentElement.classList.remove('lk');$('pin').value='';$('lerr').textContent=''}else{$('lerr').textContent='الرقم غلط';$('pin').value=''}};
+$('pin').onkeydown=e=>{if(e.key==='Enter')$('unl').click()};
+let hid=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hid=Date.now();else if(getPin()&&Date.now()-hid>60000)lockNow()});
 
 const A={
  cash:{t:'إضافة نقود للخزنة',f:[['amt','المبلغ (ج.م)','n'],['note','ملاحظة (اختياري)','t']],go(v){S.t+=v.amt;log('cash',v.amt,v.note)}},
  def:{t:'إضافة لرصيد الآجل',f:[['amt','المبلغ (ج.م)','n'],['note','ملاحظة (اختياري)','t']],go(v){S.d+=v.amt;log('def',v.amt,v.note)}},
  exp:{t:'تسجيل مصروف',f:[['item','البند','t'],['amt','المبلغ (ج.م)','n']],go(v){if(!v.item.trim())throw'اكتب البند';S.t-=v.amt;log('exp',v.amt,v.item.trim())}},
- add:{t:'إضافة للتاجر',f:[['who','اسم التاجر أو كوده','t','l'],['amt','المبلغ (ج.م)','n']],go(v){const m=find(v.who);if(!m)throw'التاجر مش موجود';m.b+=v.amt;log('add',v.amt,m.n)}},
- pay:{t:'خصم من التاجر (يُخصم من الخزنة)',f:[['who','اسم التاجر أو كوده','t','l'],['amt','المبلغ (ج.م)','n']],go(v){const m=find(v.who);if(!m)throw'التاجر مش موجود';m.b-=v.amt;S.t-=v.amt;log('pay',v.amt,m.n)}},
- newm:{t:'تاجر جديد',noamt:1,f:[['name','اسم التاجر','t'],['amt','رصيد افتتاحي (اختياري)','n']],go(v){const n=v.name.trim();if(!n)throw'اكتب الاسم';if(S.m.some(x=>x.n===n))throw'الاسم موجود قبل كده';S.m.push({c:S.n++,n,b:v.amt||0})}}
+ add:{t:'إضافة للتاجر',f:[['who','اسم التاجر أو كوده','t','l'],['amt','المبلغ (ج.م)','n']],go(v){const m=find(v.who);if(!m)throw'التاجر مش موجود';m.b+=v.amt;log('add',v.amt,m.n,m.c)}},
+ pay:{t:'خصم من التاجر (يُخصم من الخزنة)',f:[['who','اسم التاجر أو كوده','t','l'],['amt','المبلغ (ج.م)','n']],go(v){const m=find(v.who);if(!m)throw'التاجر مش موجود';m.b-=v.amt;S.t-=v.amt;log('pay',v.amt,m.n,m.c)}},
+ newm:{t:'تاجر جديد',noamt:1,f:[['name','اسم التاجر','t'],['amt','رصيد افتتاحي (اختياري)','n']],go(v){const n=v.name.trim();if(!n)throw'اكتب الاسم';if(S.m.some(x=>x.n===n))throw'الاسم موجود قبل كده';S.m.push({c:S.n++,n,b:v.amt||0})}},
+ edit:{t:'تعديل العملية',f:[],i:-1,go(v){const x=S.l[this.i];if(!x)throw'العملية مش موجودة';if(x.k==='exp'&&!String(v.w).trim())throw'اكتب البند';eff(x,-1);x.a=v.amt;if('w' in v)x.w=String(v.w).trim();eff(x,1)}},
+ pin:{t:'القفل برقم سري',noamt:1,f:[],go(v){const st=getPin();if(st&&hs(pn(v.cur))!==st)throw'الرقم الحالي غلط';const n=pn(v.nw);
+  if(!n){if(!st)throw'اكتب الرقم السري';localStorage.removeItem(PK)}
+  else{if(!/^\d{4,}$/.test(n))throw'الرقم لازم يكون ٤ أرقام على الأقل';localStorage.setItem(PK,hs(n))}}}
 };
 let act=null;
-function open(a){act=a;$('dt').textContent=A[a].t;$('err').textContent='';
- $('flds').innerHTML=A[a].f.map(([id,l,t,dl])=>`<label for="f_${id}">${l}</label><input id="f_${id}" type="text" ${t==='n'?'inputmode="decimal"':''} ${dl?'list="names"':''} autocomplete="off">`).join('');
+function open(a,pre){act=a;
+ if(a==='pin')A.pin.f=(getPin()?[['cur','الرقم الحالي','p']]:[]).concat([['nw',getPin()?'رقم جديد (سيبه فاضي لإيقاف القفل)':'اختار رقم سري (٤ أرقام على الأقل)','p']]);
+ $('dt').textContent=A[a].t;$('err').textContent='';
+ $('flds').innerHTML=A[a].f.map(([id,l,t,dl])=>`<label for="f_${id}">${l}</label><input id="f_${id}" type="${t==='p'?'password':'text'}" ${t==='n'?'inputmode="decimal"':t==='p'?'inputmode="numeric"':''} ${dl?'list="names"':''} autocomplete="off">`).join('');
+ if(pre)A[a].f.forEach(([id])=>{if(pre[id]!==undefined)$('f_'+id).value=pre[id]});
  $('dlg').showModal();$('flds').querySelector('input').focus()}
 $('ok').onclick=()=>{const d=A[act],v={};d.f.forEach(([id,,t])=>{const x=$('f_'+id).value;v[id]=t==='n'?num(x):x});
  try{if(!d.noamt&&!(v.amt>0))throw'اكتب مبلغ أكبر من صفر';d.go(v);save();$('dlg').close();draw()}catch(e){$('err').textContent=typeof e==='string'?e:'حصل خطأ'}};
 $('cx').onclick=()=>$('dlg').close();
+$('sx').onclick=()=>$('sdlg').close();
 document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>open(b.dataset.a));
 function del(c){const m=S.m.find(x=>x.c===c);if(m&&confirm('حذف التاجر "'+m.n+'"'+(m.b?' (رصيده '+f(m.b)+')':'')+'؟')){S.m=S.m.filter(x=>x.c!==c);save();draw()}}
+
+function editOp(i){const x=S.l[i];if(!x)return;
+ A.edit.f=[['amt','المبلغ (ج.م)','n']];
+ if(x.k==='exp'||x.k==='cash'||x.k==='def')A.edit.f.push(['w',x.k==='exp'?'البند':'ملاحظة','t']);
+ A.edit.i=i;open('edit',{amt:x.a,w:x.w||''})}
+function delOp(i){const x=S.l[i];if(!x)return;
+ const gone=(x.k==='add'||x.k==='pay')&&!mOf(x);
+ if(confirm('حذف عملية «'+KL[x.k]+(x.w?' - '+x.w:'')+'» بمبلغ '+f(x.a)+'؟\nهترجع الأرصدة زي ما كانت قبلها.'+(gone?'\n(التاجر ده اتحذف، فهيتعدّل رصيد الخزنة بس)':''))){eff(x,-1);S.l.splice(i,1);save();draw()}}
+$('undo').onclick=()=>delOp(S.l.length-1);
+let allOps=false;$('more').onclick=()=>{allOps=!allOps;draw()};
+
+function stmt(c){const m=S.m.find(x=>x.c===c);if(!m)return;
+ const mine=S.l.filter(x=>(x.k==='add'||x.k==='pay')&&(x.c!==undefined?x.c===m.c:x.w===m.n));
+ const op0=m.b-mine.reduce((s,x)=>s+(x.k==='add'?x.a:-x.a),0);
+ $('st').textContent='كشف حساب: '+m.n;
+ $('sb').innerHTML=`<div class="mrow"><span>الرصيد الحالي</span><b class="gold">${cur(m.b)}</b></div>`
+  +(Math.abs(op0)>0.005?`<div class="mrow"><span>رصيد سابق / افتتاحي</span><b>${cur(op0)}</b></div>`:'')
+  +(mine.length?mine.slice().reverse().map(x=>`<div class="mrow" style="border-top:1px solid var(--line)"><span>${x.k==='add'?'إضافة':'خصم'} · ${fd(x.d)}</span><b class="${x.k==='add'?'gold':'tl'}">${x.k==='add'?'+':'−'}${f(x.a)}</b></div>`).join(''):'<div class="empty">لا توجد عمليات لهذا التاجر.</div>');
+ $('sdlg').showModal()}
+
 const sgn=(el,v)=>el.classList.toggle('neg',v<0);
 
 function draw(){
@@ -122,7 +195,7 @@ function draw(){
  $('av').textContent=cur(S.t);sgn($('av'),S.t);
  $('debt').textContent=cur(debt);
  const net=S.t-debt;$('net').textContent=cur(net);$('net').classList.toggle('neg',net<0);$('net').classList.toggle('pos',net>=0);
- $('mt').innerHTML=S.m.length?S.m.map(m=>`<tr><td>${f(m.c)}</td><td>${esc(m.n)}</td><td class="n">${f(m.b)}</td><td><button class="x" aria-label="حذف" onclick="del(${m.c})">×</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">لا يوجد تجار بعد. اضغط «+ تاجر» لإضافة أول تاجر.</td></tr>';
+ $('mt').innerHTML=S.m.length?S.m.map(m=>`<tr><td>${f(m.c)}</td><td><button class="lnk" onclick="stmt(${m.c})">${esc(m.n)}</button></td><td class="n">${f(m.b)}</td><td><button class="x" aria-label="حذف" onclick="del(${m.c})">×</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">لا يوجد تجار بعد. اضغط «+ تاجر» لإضافة أول تاجر.</td></tr>';
  $('names').innerHTML=S.m.map(m=>`<option value="${esc(m.n)}">`).join('');
  const q=norm($('q').value.trim()),ex=S.l.filter(x=>x.k==='exp'&&(!q||norm(x.w).includes(q))).reverse();
  $('el').innerHTML=ex.length?ex.map(x=>`<tr><td>${esc(x.w)}</td><td class="n">${f(x.a)}</td><td>${new Date(x.d).toLocaleDateString('ar-EG',{day:'numeric',month:'short'})}</td></tr>`).join(''):`<tr><td colspan="3" class="empty">${q?'مفيش مصروف بالاسم ده':'لا توجد مصروفات مسجلة بعد.'}</td></tr>`;
@@ -131,9 +204,20 @@ function draw(){
  const sum=k=>mo.filter(x=>x.k===k).reduce((s,x)=>s+x.a,0);
  $('mname').textContent=now.toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
  $('mon').innerHTML=mo.length?[['نقود مضافة للخزنة',sum('cash')],['مضاف للآجل',sum('def')],['مصروفات',sum('exp')],['مضاف للتجار',sum('add')],['مخصوم من التجار',sum('pay')]].map(([l,v])=>`<div class="mrow"><span>${l}</span><b>${cur(v)}</b></div>`).join('')+`<div class="mrow" style="border-top:1px solid var(--line);margin-top:6px;padding-top:10px"><span>عدد العمليات</span><b>${f(mo.length)}</b></div>`:'<div class="empty">لا توجد عمليات هذا الشهر.</div>';
+ /* سجل العمليات */
+ const all2=S.l.map((x,i)=>[x,i]).reverse(),shown=allOps?all2:all2.slice(0,15);
+ $('undo').hidden=!S.l.length;
+ $('ops').innerHTML=shown.length?shown.map(([x,i])=>`<div class="op"><div class="oi"><b>${KL[x.k]||x.k}</b>${x.w?' · '+esc(x.w):''}<div class="lbl">${fd(x.d)}</div></div><div class="oa">${f(x.a)}</div><button class="x ed" aria-label="تعديل" onclick="editOp(${i})">✎</button><button class="x" aria-label="حذف" onclick="delOp(${i})">×</button></div>`).join(''):'<div class="empty">لا توجد عمليات بعد.</div>';
+ $('more').hidden=all2.length<=15;$('more').textContent=allOps?'عرض الأحدث فقط':'عرض كل العمليات ('+f(all2.length)+')';
+ /* تذكير النسخة الاحتياطية */
+ const days=S.bk?Math.floor((Date.now()-S.bk)/864e5):null,has=S.l.length||S.m.length;
+ $('bk').hidden=!(has&&(!S.bk||days>=7));
+ $('bkt').textContent=S.bk?'آخر نسخة احتياطية من '+f(days)+' يوم. خد نسخة جديدة عشان بياناتك متضيعش.':'لسه ماعملتش نسخة احتياطية. بياناتك محفوظة على الموبايل ده بس.';
+ $('pinb').textContent=getPin()?'🔒 تغيير / إيقاف القفل':'🔒 تفعيل قفل برقم سري';
 }
 
-$('exp').onclick=()=>{const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kafia-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()};
+$('exp').onclick=()=>{S.bk=Date.now();save();draw();const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kafia-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()};
+$('bkb').onclick=()=>$('exp').click();
 $('imp').onclick=()=>$('file').click();
 $('file').onchange=e=>{const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!Array.isArray(o.m)||!Array.isArray(o.l))throw 0;if(confirm('هيستبدل البيانات الحالية بالنسخة دي. متأكد؟')){S=o;S.d=S.d||0;save();draw()}}catch(x){alert('الملف مش نسخة احتياطية صحيحة')}};if(e.target.files[0])r.readAsText(e.target.files[0]);e.target.value=''};
 
