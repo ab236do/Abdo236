@@ -52,6 +52,15 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 html.lk #lock{display:flex}
 .lbox{width:min(92vw,360px);text-align:center}
 .lbox input{text-align:center;font-size:24px;letter-spacing:6px;margin:12px 0}
+.cd{background:#0b121b;border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:12px 0;text-align:right;min-height:78px}
+.ce{color:var(--mut);font-size:17px;min-height:26px;overflow-wrap:anywhere}
+.cr{font-size:32px;font-weight:700;overflow-wrap:anywhere}
+.ckg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ck{border:1px solid var(--line);border-radius:14px;padding:14px 0;font:inherit;font-size:22px;font-weight:700;background:#0b121b;color:var(--ink);cursor:pointer;touch-action:manipulation}
+.ck.op{color:var(--gold)}.ck.fn{color:var(--red)}
+.ck.eq{background:var(--teal);color:#0b1620;border-color:var(--teal)}
+.ck:active{background:var(--line)}
+.ck.eq:active{background:var(--gold)}
 </style>
 <script>try{if(localStorage.getItem('kafia-pin'))document.documentElement.classList.add('lk')}catch(e){}</script>
 </head><body>
@@ -71,6 +80,26 @@ html.lk #lock{display:flex}
 </div>
 
 <div class="box"><div class="lbl">صافي الخزنة بعد الدين (المتاح − الدين)</div><div class="val" id="net"></div></div>
+
+<div class="box">
+ <div class="head" style="margin-bottom:0"><h2>آلة حاسبة</h2></div>
+ <div class="cd" dir="ltr"><div class="ce" id="ce"></div><div class="cr" id="cr">٠</div></div>
+ <div class="ckg" dir="ltr">
+  <button type="button" class="ck fn" data-k="C">C</button><button type="button" class="ck fn" data-k="B">⌫</button><button type="button" class="ck op" data-k="%">%</button><button type="button" class="ck op" data-k="÷">÷</button>
+  <button type="button" class="ck" data-k="7">٧</button><button type="button" class="ck" data-k="8">٨</button><button type="button" class="ck" data-k="9">٩</button><button type="button" class="ck op" data-k="×">×</button>
+  <button type="button" class="ck" data-k="4">٤</button><button type="button" class="ck" data-k="5">٥</button><button type="button" class="ck" data-k="6">٦</button><button type="button" class="ck op" data-k="−">−</button>
+  <button type="button" class="ck" data-k="1">١</button><button type="button" class="ck" data-k="2">٢</button><button type="button" class="ck" data-k="3">٣</button><button type="button" class="ck op" data-k="+">+</button>
+  <button type="button" class="ck" data-k="0">٠</button><button type="button" class="ck" data-k=".">٫</button><button type="button" class="ck eq" data-k="=" style="grid-column:span 2">=</button>
+ </div>
+ <div class="lbl" style="margin:14px 0 8px">استخدم الناتج في:</div>
+ <div class="g2" style="margin-bottom:0">
+  <button type="button" class="btn out" data-u="cash" style="font-size:15px;padding:12px 6px">+ نقود للخزنة</button>
+  <button type="button" class="btn out" data-u="exp" style="font-size:15px;padding:12px 6px">– مصروف</button>
+  <button type="button" class="btn out" data-u="add" style="font-size:15px;padding:12px 6px">+ إضافة للتاجر</button>
+  <button type="button" class="btn out" data-u="pay" style="font-size:15px;padding:12px 6px">– خصم من التاجر</button>
+ </div>
+ <div class="err" id="cerr"></div>
+</div>
 
 <div class="box">
  <div class="head"><h2>جدول حسابات التجار</h2><button class="btn out mini" data-a="newm">+ تاجر</button></div>
@@ -105,7 +134,7 @@ html.lk #lock{display:flex}
 <div class="foot"><button class="btn b-teal" id="ok">حفظ</button><button type="button" class="btn out" id="cx">إلغاء</button></div></form></dialog>
 
 <dialog id="sdlg"><h2 id="st"></h2><div id="sb" style="margin-top:10px"></div>
-<div class="foot"><button class="btn out" id="sx">إغلاق</button></div></dialog>
+<div class="foot"><button class="btn b-teal" id="ssh">مشاركة (واتساب)</button><button class="btn out" id="sx">إغلاق</button></div></dialog>
 
 <datalist id="names"></datalist>
 
@@ -184,7 +213,42 @@ function stmt(c){const m=S.m.find(x=>x.c===c);if(!m)return;
  $('sb').innerHTML=`<div class="mrow"><span>الرصيد الحالي</span><b class="gold">${cur(m.b)}</b></div>`
   +(Math.abs(op0)>0.005?`<div class="mrow"><span>رصيد سابق / افتتاحي</span><b>${cur(op0)}</b></div>`:'')
   +(mine.length?mine.slice().reverse().map(x=>`<div class="mrow" style="border-top:1px solid var(--line)"><span>${x.k==='add'?'إضافة':'خصم'} · ${fd(x.d)}</span><b class="${x.k==='add'?'gold':'tl'}">${x.k==='add'?'+':'−'}${f(x.a)}</b></div>`).join(''):'<div class="empty">لا توجد عمليات لهذا التاجر.</div>');
+ stxt=['كشف حساب: '+m.n,'الرصيد الحالي: '+cur(m.b)].concat(Math.abs(op0)>0.005?['رصيد سابق / افتتاحي: '+cur(op0)]:[],mine.slice().reverse().map(x=>(x.k==='add'?'إضافة':'خصم')+' - '+fd(x.d)+': '+(x.k==='add'?'+':'-')+f(x.a)),['','حسابات الزعيم كافية']).join('\n');
  $('sdlg').showModal()}
+let stxt='';
+$('ssh').onclick=()=>{if(navigator.share)navigator.share({text:stxt}).catch(()=>{});else location.href='https://wa.me/?text='+encodeURIComponent(stxt)};
+
+/* آلة حاسبة */
+let ce='',fresh=false;
+const toAr=s=>String(s).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]).replace(/\./g,'٫');
+function cval(){let s=ce.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/[+\-*/.]+$/,'');
+ if(!s||!/^[0-9+\-*/.]+$/.test(s))return null;
+ s=s.replace(/(^|[^\d.])0+(?=\d)/g,'$1');
+ try{const r=Function('"use strict";return ('+s+')')();return isFinite(r)?Math.round(r*1e8)/1e8:null}catch(e){return null}}
+function cdraw(){const v=cval(),hasOp=/[+\-×÷−]/.test(ce.replace(/^−/,''));
+ $('ce').textContent=hasOp?toAr(ce):'';
+ $('cr').textContent=v===null?(ce?toAr(ce):'٠'):f(v);$('cerr').textContent=''}
+function cpress(k){
+ const isOp=/[+−×÷]/.test(k);
+ if(k==='C'){ce='';fresh=false}
+ else if(k==='B'){ce=ce.slice(0,-1);fresh=false}
+ else if(k==='='){const v=cval();if(v!==null){ce=String(v).replace('-','−');fresh=true}}
+ else if(k==='%'){const m=ce.match(/(\d+\.?\d*)$/);if(m){ce=ce.slice(0,-m[1].length)+String(+(+m[1]/100).toFixed(8));fresh=false}}
+ else if(isOp){
+  if(!ce){if(k==='−')ce='−'}
+  else if(ce==='−'){}
+  else if(/[+−×÷]$/.test(ce)){ce=ce.slice(0,-1)+k}
+  else ce+=k;
+  fresh=false}
+ else{ /* رقم أو فاصلة */
+  if(fresh){ce='';fresh=false}
+  if(k==='.'){const last=ce.split(/[+−×÷]/).pop();if(last.includes('.'))return;if(!last)ce+='0'}
+  ce+=k}
+ cdraw()}
+document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>cpress(b.dataset.k));
+document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const v=cval();
+ if(v===null||!(v>0)){$('cerr').textContent='احسب مبلغ أكبر من صفر الأول';return}
+ open(b.dataset.u,{amt:String(v)})});
 
 const sgn=(el,v)=>el.classList.toggle('neg',v<0);
 
