@@ -69,14 +69,27 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .hd2{display:flex;justify-content:space-between;align-items:center}
 .gear{background:none;border:1px solid var(--line);border-radius:14px;width:44px;height:44px;font-size:20px;cursor:pointer;color:var(--ink)}
 .tp[hidden]{display:none}
-.tbar{position:fixed;left:0;right:0;bottom:0;z-index:20;max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:2px;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.tbar{position:fixed;left:0;right:0;bottom:0;z-index:20;max-width:560px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
 .tb{border:0;background:none;color:var(--mut);font:inherit;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border-radius:12px;cursor:pointer;touch-action:manipulation}
 .tb b{font-size:20px;font-weight:400;line-height:1.2}
 .tb.on{background:#1b3a3f;color:var(--teal)}
 .fab{position:fixed;left:max(14px,calc(50% - 266px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:21;width:56px;height:56px;border-radius:50%;border:0;background:var(--gold);font-size:26px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 #cbox{display:none;position:fixed;z-index:22;left:50%;transform:translateX(-50%);width:min(calc(100% - 28px),532px);bottom:calc(82px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 170px);overflow:auto;margin:0;box-shadow:0 8px 30px rgba(0,0,0,.6)}
 #cbox.open{display:block}
-.tb{position:relative}
+.tbar::-webkit-scrollbar{display:none}
+.tb{position:relative;flex:1 0 50px}
+.btn.sel{background:var(--teal);color:#0b1620;border-color:var(--teal)}
+.wr{display:grid;grid-template-columns:54px 74px 1fr 66px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.wr.wh{color:var(--mut);font-size:13px;border-bottom:2px solid var(--line)}
+.wr.dim{opacity:.4}
+.wd{display:flex;flex-direction:column;line-height:1.2}.wd small{color:var(--mut);font-size:12px}
+.wi{margin:0!important;padding:8px 6px!important;font-size:16px!important;text-align:center}
+.wb{font-size:14px;text-align:center}
+.stb{border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:13px;padding:8px 2px;border-radius:10px;cursor:pointer;touch-action:manipulation}
+.stb.on-p{background:#1c3b2d;border-color:#5fd38d}.stb.on-h{background:#3a3220;border-color:var(--gold)}.stb.on-a{background:#3d2420;border-color:var(--red)}
+.sg{display:flex;gap:4px}
+.sg button{border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:14px;padding:8px 9px;border-radius:10px;cursor:pointer;touch-action:manipulation}
+.sg .on-p{background:#1c3b2d;border-color:#5fd38d}.sg .on-h{background:#3a3220;border-color:var(--gold)}.sg .on-a{background:#3d2420;border-color:var(--red)}
 .bd{position:absolute;top:0;right:12%;background:var(--red);color:#0b1620;border-radius:10px;font-size:11px;font-weight:700;min-width:18px;padding:0 5px;line-height:18px;text-align:center}
 .rxw{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
 .rxc{display:flex;align-items:center;border:1px solid var(--line);border-radius:14px;padding:0 4px}
@@ -153,6 +166,24 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <button class="btn out" data-a="def">+ إضافة لرصيد الآجل</button>
 </div>
 
+<div class="tp" id="t6" hidden>
+ <div class="box">
+  <div class="head"><h2>العمال</h2><button class="btn out mini" data-a="neww">+ عامل</button></div>
+  <div class="lbl" style="margin-bottom:2px">اضغط على اسم العامل لعرض رصيده وكشف الشهور.</div>
+  <div id="wbl"></div>
+  <div class="mrow" style="padding-top:10px"><span>إجمالي أرصدة العمال عندك</span><b class="gold" id="wtot"></b></div>
+  <label for="wsel" style="margin-top:14px">جدول العامل</label><select id="wsel" onchange="wcur=+this.value;draw()"></select>
+  <div class="mnav" style="margin-top:10px"><button type="button" class="x ed" id="wprev" aria-label="الشهر السابق">›</button><b id="wmname"></b><button type="button" class="x ed" id="wnext" aria-label="الشهر التالي">‹</button></div>
+  <div class="g2" style="margin-bottom:8px"><button class="btn out mini" data-a="wfill">تعبئة سحب موحّد</button><button class="btn out mini" data-a="wwage">تعديل اليومية</button></div>
+  <div id="wsum"></div>
+ </div>
+ <div class="box">
+  <div class="head" style="margin-bottom:4px"><h2>جدول الشهر</h2></div>
+  <div class="lbl" style="margin-bottom:6px">اضغط على الحالة لتغييرها في أي يوم من الشهر (حاضر ← نصف ← غائب). الأيام الجاية بتبدأ «غير محدد» ومبتتحسبش إلا لما تحددها. السحب لحد النهارده بس.</div>
+  <div class="wr wh"><div>اليوم</div><div>الحالة</div><div>السحب</div><div>الرصيد</div></div>
+  <div id="wtab"></div>
+ </div>
+</div>
 <button type="button" class="fab" id="fab" aria-label="آلة حاسبة">🧮</button>
 <div class="box" id="cbox">
  <button type="button" class="ctog" id="ctog"><span>🧮 آلة حاسبة</span><span id="carr">✕</span></button>
@@ -181,6 +212,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
  <button type="button" class="tb on" data-i="0"><b>💰</b>الخزنة</button>
  <button type="button" class="tb" data-i="5"><b>⏳</b>الآجل</button>
  <button type="button" class="tb" data-i="1"><b>👥</b>التجار<span class="bd" id="bd" hidden></span></button>
+ <button type="button" class="tb" data-i="6"><b>👷</b>العمال</button>
  <button type="button" class="tb" data-i="2"><b>🧾</b>المصروفات</button>
  <button type="button" class="tb" data-i="3"><b>📊</b>التقارير</button>
  <button type="button" class="tb" data-i="4"><b>📋</b>السجل</button>
@@ -190,16 +222,16 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <div class="foot"><button class="btn b-teal" id="ok">حفظ</button><button type="button" class="btn out" id="cx">إلغاء</button></div></form></dialog>
 
 <dialog id="sdlg"><h2 id="st"></h2><div id="sb" style="margin-top:10px"></div>
-<div class="foot"><button class="btn b-teal" id="ssh">مشاركة (واتساب)</button><button class="btn out" id="sx">إغلاق</button></div></dialog>
+<div class="foot"><button class="btn b-teal" id="ssh">مشاركة (واتساب)</button><button class="btn out" id="wsb" hidden>تعديل اليومية</button><button class="btn out" id="sx">إغلاق</button></div></dialog>
 
-<datalist id="names"></datalist>
+<datalist id="names"></datalist><datalist id="wnames"></datalist>
 
 <div id="lock"><div class="lbox"><h1>🔒 حسابات الزعيم</h1><input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="الرقم السري"><button class="btn b-teal" id="unl">فتح</button><div class="err" id="lerr"></div></div></div>
 
 <script>
 const K='kafia-ledger-v1',PK='kafia-pin';
 let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
-S=S||{t:0,m:[],l:[],n:1};S.d=S.d||0;S.cl=S.cl||[];S.rx=S.rx||[];
+S=S||{t:0,m:[],l:[],n:1};S.d=S.d||0;S.cl=S.cl||[];S.rx=S.rx||[];S.w=S.w||[];S.at=S.at||{};S.wn=S.wn||1;
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert('تعذر الحفظ على الموبايل')}};
 const $=id=>document.getElementById(id);
 const f=n=>Number(n).toLocaleString('ar-EG',{maximumFractionDigits:2});
@@ -211,11 +243,11 @@ const num=v=>{v=parseFloat(String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩
 const find=q=>{q=norm(q.trim());return S.m.find(x=>String(x.c)===q)||S.m.find(x=>norm(x.n)===q)||S.m.find(x=>norm(x.n).includes(q))};
 const log=(k,a,w,c)=>S.l.push({d:Date.now(),k,a,w,c});
 const mOf=x=>S.m.find(m=>x.c!==undefined?m.c===x.c:m.n===x.w);
-const KL={cash:'نقود للخزنة',def:'إضافة للآجل',exp:'مصروف',add:'إضافة للتاجر',pay:'خصم من التاجر'};
+const KL={cash:'نقود للخزنة',def:'إضافة للآجل',exp:'مصروف',add:'إضافة للتاجر',pay:'خصم من التاجر',draw:'سحب عامل',wpay:'صرف رصيد عامل'};
 /* s=1 يطبّق أثر العملية، s=-1 يلغي أثرها */
 function eff(x,s){const m=mOf(x),a=x.a*s;
  if(x.k==='cash')S.t+=a;else if(x.k==='def')S.d+=a;else if(x.k==='exp')S.t-=a;
- else if(x.k==='add'){if(m)m.b+=a}else if(x.k==='pay'){if(m)m.b-=a;S.t-=a}}
+ else if(x.k==='add'){if(m)m.b+=a}else if(x.k==='pay'){if(m)m.b-=a;S.t-=a}else if(x.k==='draw'||x.k==='wpay')S.t-=a}
 
 /* قفل برقم سري (قفل راحة للشاشة، مش تشفير) */
 const pn=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim();
@@ -238,7 +270,7 @@ const A={
  close:{t:'تقفيل اليوم',noamt:1,f:[['act','المبلغ الفعلي في الدرج (ج.م)','n']],
   info(){const t=new Date().toDateString(),td=S.l.filter(x=>new Date(x.d).toDateString()===t),sm=k=>td.filter(x=>x.k===k).reduce((s,x)=>s+x.a,0);
    const r=(l,v,c)=>`<div class="mrow"><span>${l}</span><b${c?' class="'+c+'"':''}>${cur(v)}</b></div>`;
-   return r('نقود مضافة اليوم',sm('cash'))+r('مصروفات اليوم',sm('exp'))+r('مخصوم من التجار اليوم',sm('pay'))
+   return r('نقود مضافة اليوم',sm('cash'))+r('مصروفات اليوم',sm('exp'))+r('مخصوم من التجار اليوم',sm('pay'))+r('أجور العمال اليوم',sm('draw')+sm('wpay'))
     +`<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">`+r('المتوقع في الدرج (المتاح في الخزنة)',S.t,'tl')+`</div>`},
   after(){$('flds').insertAdjacentHTML('beforeend','<div class="mrow" id="cdf" style="margin-top:10px;font-weight:700"></div>');
    $('f_act').oninput=()=>{const raw=$('f_act').value.trim(),el=$('cdf');el.className='mrow';
@@ -246,6 +278,15 @@ const A={
     const d=Math.round((num(raw)-S.t)*100)/100;
     el.innerHTML=d<0?`<span class="neg">عجز ${f(-d)} ج.م</span>`:d>0?`<span class="pos">زيادة ${f(d)} ج.م</span>`:'<span class="pos">مظبوط ✅</span>'}},
   go(){const raw=$('f_act').value.trim();if(!raw)throw'اكتب المبلغ الفعلي اللي في الدرج';const a=num(raw);S.cl.push({d:Date.now(),e:S.t,a,df:Math.round((a-S.t)*100)/100})}},
+ neww:{t:'عامل جديد',f:[['name','اسم العامل','t'],['amt','اليومية (ج.م)','n'],['start','تاريخ بداية الشغل','d'],['ob','رصيد سابق له عندك (اختياري)','n']],go(v){const n=v.name.trim();if(!n)throw'اكتب اسم العامل';if(S.w.some(x=>x.n===n))throw'الاسم موجود قبل كده';const sd=v.start?kd(v.start).getTime():Date.now();S.w.push({id:S.wn++,n,s:sd,wh:[{from:'0000-00-00',v:v.amt}],ob:v.ob});wcur=S.w[S.w.length-1].id}},
+ wfill:{t:'تعبئة سحب موحّد',f:[['amt','مبلغ السحب لكل يوم حضور (ج.م)','n']],
+  info(){const w=S.w.find(x=>x.id===wcur),m=wmonth();return `<div class="lbl" style="margin-bottom:8px">العامل: ${esc(w?w.n:'—')} · ${m.label}. بيتحط في الأيام اللي مفيهاش سحب ومش غياب.</div>`},
+  go(v){const w=S.w.find(x=>x.id===wcur);if(!w)throw'اختار عامل الأول';const m=wmonth(),t=dk(new Date()),sk=wsd(w);let n=0;
+   for(let d=new Date(m.y,m.m,1,12);d.getMonth()===m.m;d.setDate(d.getDate()+1)){const k=dk(d);if(k<sk||k>t||wst(w,k)==='a')continue;if(S.l.some(x=>x.k==='draw'&&x.wk===w.id&&dk(new Date(x.d))===k))continue;putDraw(w,k,v.amt);n++}
+   if(!n)throw'مفيش أيام فاضية للتعبئة'}},
+ wwage:{t:'تعديل اليومية',noamt:0,f:[['who','اسم العامل','t','w'],['amt','اليومية الجديدة (ج.م)','n'],['from','تسري من تاريخ','d']],go(v){const w=wf(v.who);if(!w)throw'العامل مش موجود';if(!v.from)throw'اختار التاريخ';w.wh=(w.wh||[]).filter(h=>h.from!==v.from).concat([{from:v.from,v:v.amt}]).sort((a,b)=>a.from<b.from?-1:1)}},
+ wob:{t:'رصيد سابق للعامل',f:[['who','اسم العامل','t','w'],['amt','الرصيد السابق له عندك (ج.م)','n']],go(v){const w=wf(v.who);if(!w)throw'العامل مش موجود';w.ob=v.amt}},
+ wpay:{t:'صرف رصيد عامل (يخرج من الخزنة)',f:[['who','اسم العامل','t','w'],['amt','المبلغ (ج.م)','n'],['note','ملاحظة (اختياري)','t']],go(v){const w=wf(v.who);if(!w)throw'العامل مش موجود';S.t-=v.amt;logw('wpay',v.amt,w,v.note)}},
  rx:{t:'مصروف جاهز جديد',f:[['item','البند','t'],['amt','المبلغ المعتاد (ج.م)','n'],['cat','التصنيف','s',0,CATS]],go(v){if(!v.item.trim())throw'اكتب البند';S.rx.push({n:v.item.trim(),a:v.amt,g:v.cat||''})}},
  pin:{t:'القفل برقم سري',noamt:1,f:[],go(v){const st=getPin();if(st&&hs(pn(v.cur))!==st)throw'الرقم الحالي غلط';const n=pn(v.nw);
   if(!n){if(!st)throw'اكتب الرقم السري';localStorage.removeItem(PK)}
@@ -255,8 +296,9 @@ let act=null;
 function open(a,pre){act=a;
  if(a==='pin')A.pin.f=(getPin()?[['cur','الرقم الحالي','p']]:[]).concat([['nw',getPin()?'رقم جديد (سيبه فاضي لإيقاف القفل)':'اختار رقم سري (٤ أرقام على الأقل)','p']]);
  $('dt').textContent=A[a].t;$('err').textContent='';
- $('flds').innerHTML=A[a].f.map(([id,l,t,dl,op])=>t==='s'?`<label for="f_${id}">${l}</label><select id="f_${id}"><option value="">— اختر —</option>${op.map(o=>`<option>${o}</option>`).join('')}</select>`:`<label for="f_${id}">${l}</label><input id="f_${id}" type="${t==='p'?'password':'text'}" ${t==='n'?'inputmode="decimal"':t==='p'?'inputmode="numeric"':''} ${dl?'list="names"':''} autocomplete="off">`).join('');
+ $('flds').innerHTML=A[a].f.map(([id,l,t,dl,op])=>t==='s'?`<label for="f_${id}">${l}</label><select id="f_${id}"><option value="">— اختر —</option>${op.map(o=>`<option>${o}</option>`).join('')}</select>`:`<label for="f_${id}">${l}</label><input id="f_${id}" type="${t==='p'?'password':t==='d'?'date':'text'}" ${t==='n'?'inputmode="decimal"':t==='p'?'inputmode="numeric"':''} ${dl?'list="'+(dl==='w'?'wnames':'names')+'"':''} autocomplete="off">`).join('');
  if(A[a].info)$('flds').insertAdjacentHTML('afterbegin',A[a].info());
+ A[a].f.forEach(([id,,t])=>{if(t==='d')$('f_'+id).value=dk(new Date())});
  if(pre)A[a].f.forEach(([id])=>{if(pre[id]!==undefined)$('f_'+id).value=pre[id]});
  if(A[a].after)A[a].after();
  $('dlg').showModal();$('flds').querySelector('input').focus()}
@@ -274,6 +316,47 @@ function editOp(i){const x=S.l[i];if(!x)return;
  A.edit.i=i;open('edit',{amt:x.a,w:x.w||'',cat:x.g||''})}
 function useRx(i){const r=S.rx[i];if(r)open('exp',{item:r.n,amt:String(r.a),cat:r.g||''})}
 function delRx(i){const r=S.rx[i];if(r&&confirm('حذف «'+r.n+'» من القايمة الجاهزة؟')){S.rx.splice(i,1);save();draw()}}
+/* العمال: يومية، سحب يومي، ورصيد متراكم */
+let wcur=0,mcur=0,wmo=0;
+function dk(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function kd(k){return new Date(k+'T12:00:00')}
+function wf(q){q=String(q).trim();if(!q)return null;return S.w.find(w=>w.n===q)||S.w.find(w=>w.n.includes(q))||null}
+function logw(k,a,w,note){const x={d:Date.now(),k,a,w:w.n,wk:w.id};if(note&&String(note).trim())x.r=String(note).trim();S.l.push(x)}
+function wsd(w){return dk(new Date(w.s))}
+function wageOn(w,k){const h=w.wh&&w.wh.length?w.wh:[{from:'0000-00-00',v:w.sal||0}];let v=h[0].v;for(const x of h){if(x.from<=k)v=x.v}return v}
+function wst(w,k){const v=(S.at[k]||{})[w.id];return v||(k>dk(new Date())?'n':'p')}
+function wearn(w,k){const st=wst(w,k);if(st==='a'||st==='n')return 0;const g=wageOn(w,k);return st==='h'?g/2:g}
+function sumK(w,kind,a,b){return S.l.reduce((s,x)=>{if(x.k!==kind||x.wk!==w.id)return s;const k=dk(new Date(x.d));return k>=a&&k<=b?s+x.a:s},0)}
+function wbal(w,toK){const sk=wsd(w),e=toK;let bal=Number(w.ob)||0;
+ if(e>=sk){for(let d=kd(sk);dk(d)<=e;d.setDate(d.getDate()+1))bal+=wearn(w,dk(d))}
+ return bal-sumK(w,'draw','0000-00-00',toK)-sumK(w,'wpay','0000-00-00',toK)}
+function mstat(w,y,m){const f0=dk(new Date(y,m,1)),l=dk(new Date(y,m+1,0)),sk=wsd(w);let earned=0,days=0;
+ for(let d=new Date(y,m,1,12);dk(d)<=l;d.setDate(d.getDate()+1)){const k=dk(d);if(k>=sk){earned+=wearn(w,k);const st=wst(w,k);days+=st==='p'?1:st==='h'?.5:0}}
+ return{y,m,earned,days,draws:sumK(w,'draw',f0,l),pays:sumK(w,'wpay',f0,l),carry:wbal(w,dk(new Date(y,m,0))),end:wbal(w,l),label:new Date(y,m,1).toLocaleDateString('ar-EG',{month:'long',year:'numeric'})}}
+function wmonth(){const n=new Date(),d=new Date(n.getFullYear(),n.getMonth()-wmo,1);return{y:d.getFullYear(),m:d.getMonth(),label:d.toLocaleDateString('ar-EG',{month:'long',year:'numeric'})}}
+function wmonths(w){const n=new Date(),sd=new Date(w.s),out=[];for(let y=sd.getFullYear(),m=sd.getMonth();y*12+m<=n.getFullYear()*12+n.getMonth();m++){if(m>11){m=0;y++}out.push(mstat(w,y,m))}return out.reverse()}
+function r2(x){return Math.round(x*100)/100}
+function putDraw(w,key,val){const a=Math.max(0,num(val)),i=S.l.findIndex(x=>x.k==='draw'&&x.wk===w.id&&dk(new Date(x.d))===key);
+ if(i>=0){eff(S.l[i],-1);S.l.splice(i,1)}
+ if(a>0){const x={d:kd(key).getTime(),k:'draw',a,w:w.n,wk:w.id};S.l.push(x);eff(x,1)}}
+function setDraw(id,key,val){const w=S.w.find(x=>x.id===id);if(!w)return;putDraw(w,key,val);save();draw()}
+function cyc(id,k){const w=S.w.find(x=>x.id===id);if(!w)return;const fut=k>dk(new Date()),c=wst(w,k),nx=fut?(c==='n'?'p':c==='p'?'h':c==='h'?'a':'n'):(c==='p'?'h':c==='h'?'a':'p');
+ S.at[k]=S.at[k]||{};if((fut&&nx==='n')||(!fut&&nx==='p'))delete S.at[k][id];else S.at[k][id]=nx;if(!Object.keys(S.at[k]).length)delete S.at[k];save();draw()}
+function delW(id){const w=S.w.find(x=>x.id===id);if(w&&confirm('حذف العامل «'+w.n+'»؟ عملياته القديمة هتفضل في السجل.')){S.w=S.w.filter(x=>x.id!==id);save();draw()}}
+function payW(id){const w=S.w.find(x=>x.id===id);if(!w)return;open('wpay',{who:w.n,amt:String(Math.max(0,r2(wbal(w,dk(new Date())))))})}
+function obW(id){const w=S.w.find(x=>x.id===id);if(!w)return;open('wob',{who:w.n,amt:w.ob?String(w.ob):''})}
+function wact(k,id){const w=S.w.find(x=>x.id===id);if(!w)return;$('sdlg').close();if(k==='pay')payW(id);else if(k==='ob')obW(id);else if(k==='wage')open('wwage',{who:w.n});else if(k==='del')delW(id)}
+function wstmt(id){const w=S.w.find(x=>x.id===id);if(!w)return;const t=dk(new Date()),b=r2(wbal(w,t)),ms=wmonths(w);
+ $('st').textContent='كشف حساب: '+w.n;
+ $('sb').innerHTML=`<div class="mrow"><span>${b<0?'عليه':'له عندك'}</span><b class="${b<0?'neg':'gold'}">${cur(Math.abs(b))}</b></div>`
+  +`<div class="g2" style="margin:10px 0"><button class="btn b-teal mini" style="font-size:15px" onclick="wact('pay',${w.id})">صرف</button><button class="btn out mini" style="font-size:15px" onclick="wact('ob',${w.id})">رصيد سابق</button><button class="btn out mini" style="font-size:15px" onclick="wact('wage',${w.id})">تعديل اليومية</button><button class="btn out mini" style="font-size:15px" onclick="wact('del',${w.id})">حذف العامل</button></div>`
+  +(w.ob?`<div class="mrow"><span>رصيد سابق (قبل بداية التسجيل)</span><b>${cur(w.ob)}</b></div>`:'')
+  +ms.map(x=>`<div style="border-top:1px solid var(--line);padding:8px 0"><div class="mrow" style="padding:0"><span>${x.label}</span><b>${cur(r2(x.end))}</b></div><div class="lbl">${f(x.days)} يوم · مستحق ${f(r2(x.earned))} · سحب ${f(r2(x.draws))}${x.pays?' · صرف '+f(r2(x.pays)):''}</div></div>`).join('');
+ stxt=['كشف حساب: '+w.n,(b<0?'عليه: ':'له عندك: ')+cur(Math.abs(b))].concat(w.ob?['رصيد سابق: '+cur(w.ob)]:[],ms.map(x=>x.label+': مستحق '+f(r2(x.earned))+' - سحب '+f(r2(x.draws))+(x.pays?' - صرف '+f(r2(x.pays)):'')+' = الرصيد '+f(r2(x.end))),['','حسابات الزعيم كافية']).join('\n');
+ $('wsb').hidden=true;
+ $('sdlg').showModal()}
+$('wprev').onclick=()=>{wmo++;draw()};
+$('wnext').onclick=()=>{if(wmo>0){wmo--;draw()}};
 function delCl(i){const x=S.cl[i];if(x&&confirm('حذف تقفيل '+new Date(x.d).toLocaleDateString('ar-EG',{day:'numeric',month:'short'})+'؟')){S.cl.splice(i,1);save();draw()}}
 let moff=0;
 $('mprev').onclick=()=>{moff++;draw()};
@@ -284,7 +367,7 @@ function delOp(i){const x=S.l[i];if(!x)return;
 $('undo').onclick=()=>delOp(S.l.length-1);
 let allOps=false;$('more').onclick=()=>{allOps=!allOps;draw()};
 
-function stmt(c){const m=S.m.find(x=>x.c===c);if(!m)return;
+function stmt(c){const m=S.m.find(x=>x.c===c);if(!m)return;$('wsb').hidden=true;
  const mine=S.l.filter(x=>(x.k==='add'||x.k==='pay')&&(x.c!==undefined?x.c===m.c:x.w===m.n));
  const op0=m.b-mine.reduce((s,x)=>s+(x.k==='add'?x.a:-x.a),0);
  $('st').textContent='كشف حساب: '+m.n;
@@ -328,7 +411,7 @@ $('fab').onclick=()=>$('cbox').classList.toggle('open');
 const TT=document.querySelectorAll('.tb');
 function tab(i){TT.forEach(b=>{const k=+b.dataset.i;$('t'+k).hidden=k!==i;b.classList.toggle('on',k===i)});try{sessionStorage.setItem('kafia-tab',i)}catch(e){}}
 TT.forEach(b=>b.onclick=()=>tab(+b.dataset.i));
-try{const st=+sessionStorage.getItem('kafia-tab');if(st>0&&st<6)tab(st)}catch(e){}
+try{const st=+sessionStorage.getItem('kafia-tab');if(st>0&&st<7)tab(st)}catch(e){}
 document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>cpress(b.dataset.k));
 document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const v=cval();
  if(v===null||!(v>0)){$('cerr').textContent='احسب مبلغ أكبر من صفر الأول';return}
@@ -337,7 +420,7 @@ document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const v=cval();
 const sgn=(el,v)=>el.classList.toggle('neg',v<0);
 
 function draw(){
- const debt=S.m.reduce((s,m)=>s+m.b,0),out=S.l.reduce((s,x)=>s+(x.k==='exp'||x.k==='pay'?x.a:0),0),all=S.t+S.d+out;
+ const debt=S.m.reduce((s,m)=>s+m.b,0),out=S.l.reduce((s,x)=>s+(x.k==='exp'||x.k==='pay'||x.k==='draw'||x.k==='wpay'?x.a:0),0),all=S.t+S.d+out;
  $('all').textContent=cur(all);sgn($('all'),all);
  $('def').textContent=cur(S.d);
  $('av').textContent=cur(S.t);sgn($('av'),S.t);
@@ -354,6 +437,30 @@ function draw(){
  $('alb').innerHTML=(tp1?`<div class="mrow"><span>أعلى مديونية</span><b class="gold">${esc(tp1.n)} · ${cur(tp1.b)} (${f(Math.round(tp1.b/debt*100))}٪)</b></div>`:'')
   +al.sort((a,b)=>b[1]-a[1]).map(([m,d,nv])=>`<div class="mrow"><span>⚠️ ${esc(m.n)}</span><b>${nv?'لسه ما سدّدش · ':''}${f(d)} يوم · ${cur(m.b)}</b></div>`).join('');
  $('bd').hidden=!al.length;$('bd').textContent=f(al.length);
+ /* العمال */
+ $('wnames').innerHTML=S.w.map(w=>`<option value="${esc(w.n)}">`).join('');
+ {
+  const tk=dk(new Date()),opts=S.w.map(w=>`<option value="${w.id}">${esc(w.n)}</option>`).join('')||'<option value="0">لا يوجد عمال</option>';
+  if(!S.w.find(x=>x.id===wcur))wcur=S.w.length?S.w[0].id:0;
+  $('wsel').innerHTML=opts;$('wsel').value=String(wcur);
+  const cw=S.w.find(x=>x.id===wcur),mo2=wmonth();
+  $('wmname').textContent=mo2.label;$('wnext').disabled=wmo<=0;
+  if(!cw){$('wsum').innerHTML='<div class="empty">اضغط «+ عامل» لإضافة أول عامل.</div>';$('wtab').innerHTML='';$('wprev').disabled=true}
+  else{
+   const sdt=new Date(cw.s);$('wprev').disabled=mo2.y*12+mo2.m<=sdt.getFullYear()*12+sdt.getMonth();
+   const ms=mstat(cw,mo2.y,mo2.m),sk=wsd(cw),last=new Date(mo2.y,mo2.m+1,0).getDate();
+   const R=(l,v,c)=>`<div class="mrow"><span>${l}</span><b${c?' class="'+c+'"':''}>${v}</b></div>`;
+   $('wsum').innerHTML=R('اليومية الحالية',cur(wageOn(cw,tk)))+R('رصيد مرحّل من قبل',cur(r2(ms.carry)),ms.carry<0?'neg':'')+R('أيام العمل',f(ms.days)+' يوم')+R('مستحق الشهر',cur(r2(ms.earned)))+R('سحب الشهر',cur(r2(ms.draws)))+R('صافي الشهر',cur(r2(ms.earned-ms.draws)),ms.earned-ms.draws<0?'neg':'pos')
+    +`<div class="mrow" style="border-top:1px solid var(--line);margin-top:6px;padding-top:10px"><span>الرصيد آخر الشهر</span><b class="${ms.end<0?'neg':'gold'}">${cur(r2(ms.end))}</b></div>`;
+   let bal=ms.carry,rows='';
+   for(let d=1;d<=last;d++){const k=dk(new Date(mo2.y,mo2.m,d,12)),fut=k>tk,pre=k<sk,dis=pre,st=wst(cw,k),dr=S.l.filter(x=>x.k==='draw'&&x.wk===cw.id&&dk(new Date(x.d))===k).reduce((s,x)=>s+x.a,0);
+    if(!dis)bal+=wearn(cw,k);bal-=dr;
+    rows+=`<div class="wr${dis?' dim':''}"><div class="wd"><b>${f(d)}</b><small>${kd(k).toLocaleDateString('ar-EG',{weekday:'short'})}</small></div><button class="stb on-${st}" ${dis?'disabled':''} onclick="cyc(${cw.id},'${k}')">${st==='p'?'حاضر':st==='h'?'نصف':st==='a'?'غائب':'غير محدد'}</button><input class="wi" inputmode="decimal" ${dis||fut?'disabled':''} value="${dr||''}" placeholder="٠" onchange="setDraw(${cw.id},'${k}',this.value)"><div class="wb${bal<-0.005?' neg':''}">${pre?'':f(Math.round(bal))}</div></div>`}
+   $('wtab').innerHTML=rows}
+  let wt=0;
+  $('wbl').innerHTML=S.w.length?S.w.map(w=>{const b=r2(wbal(w,tk));wt+=b;return `<div class="mrow" style="border-bottom:1px solid var(--line);padding:10px 0"><span><button class="lnk" onclick="wstmt(${w.id})">${esc(w.n)}</button></span><b class="${b>0?'gold':b<0?'neg':''}">${cur(Math.abs(b))} ${b>0?'له':b<0?'عليه':''}</b></div>`}).join(''):'<div class="empty">اضغط «+ عامل» لإضافة أول عامل.</div>';
+  $('wtot').textContent=cur(r2(wt));
+ }
  $('rxl').innerHTML=S.rx.length?'<div class="rxw">'+S.rx.map((r,i)=>`<div class="rxc"><button class="use" onclick="useRx(${i})">${esc(r.n)} · ${f(r.a)}</button><button class="x" aria-label="حذف" onclick="delRx(${i})">×</button></div>`).join('')+'</div>':'<div class="lbl" style="margin:6px 0 12px">ضيف مصاريفك الثابتة (إيجار، كهرباء، عمال) وسجّلها بضغطتين.</div>';
  const q=norm($('q').value.trim()),ex=S.l.filter(x=>x.k==='exp'&&(!q||norm(x.w).includes(q))).reverse();
  $('el').innerHTML=ex.length?ex.map(x=>`<tr><td>${esc(x.w)}${x.g?`<div class="lbl">${esc(x.g)}</div>`:''}</td><td class="n">${f(x.a)}</td><td>${new Date(x.d).toLocaleDateString('ar-EG',{day:'numeric',month:'short'})}</td></tr>`).join(''):`<tr><td colspan="3" class="empty">${q?'مفيش مصروف بالاسم ده':'لا توجد مصروفات مسجلة بعد.'}</td></tr>`;
@@ -363,14 +470,14 @@ function draw(){
  $('mname').textContent=sel.toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
  const first=S.l.length?new Date(S.l.reduce((m,x)=>Math.min(m,x.d),Infinity)):now,fi=(now.getFullYear()-first.getFullYear())*12+now.getMonth()-first.getMonth();
  $('mnext').disabled=moff<=0;$('mprev').disabled=moff>=fi;
- const mnet=sum('cash')-sum('exp')-sum('pay'),etot=sum('exp'),cats={};
- mo.filter(x=>x.k==='exp').forEach(x=>{const g=x.g||'غير مصنف';cats[g]=(cats[g]||0)+x.a});
+ const wsum=sum('draw')+sum('wpay'),mnet=sum('cash')-sum('exp')-sum('pay')-wsum,etot=sum('exp')+wsum,cats={};
+ mo.filter(x=>x.k==='exp'||x.k==='draw'||x.k==='wpay').forEach(x=>{const g=x.k==='exp'?(x.g||'غير مصنف'):'أجور العمال';cats[g]=(cats[g]||0)+x.a});
  const pm=new Date(sel.getFullYear(),sel.getMonth()-1,1),pcats={};let ptot=0;
- S.l.forEach(x=>{if(x.k!=='exp')return;const d=new Date(x.d);if(d.getMonth()===pm.getMonth()&&d.getFullYear()===pm.getFullYear()){ptot+=x.a;const g=x.g||'غير مصنف';pcats[g]=(pcats[g]||0)+x.a}});
+ S.l.forEach(x=>{if(x.k!=='exp'&&x.k!=='draw'&&x.k!=='wpay')return;const d=new Date(x.d);if(d.getMonth()===pm.getMonth()&&d.getFullYear()===pm.getFullYear()){ptot+=x.a;const g=x.k==='exp'?(x.g||'غير مصنف'):'أجور العمال';pcats[g]=(pcats[g]||0)+x.a}});
  const dl=(c,pv)=>{const d=Math.round((c-pv)*100)/100;return d>0?`<span class="neg" style="font-size:13px">▲ ${f(d)}</span>`:d<0?`<span class="pos" style="font-size:13px">▼ ${f(-d)}</span>`:''};
  let cmp='';
  if(etot||ptot){const dd=etot-ptot;cmp=`<div class="mrow"><span>مقارنة بالشهر اللي قبله</span><b>`+(!ptot?'<span class="lbl">لا توجد مصروفات قبله</span>':dd>0?`<span class="neg">▲ زادت ${f(dd)} (${f(Math.round(dd/ptot*100))}٪)</span>`:dd<0?`<span class="pos">▼ قلّت ${f(-dd)} (${f(Math.round(-dd/ptot*100))}٪)</span>`:'<span>زي ما هي</span>')+`</b></div>`}
- $('mon').innerHTML=mo.length?[['نقود مضافة للخزنة',sum('cash')],['مضاف للآجل',sum('def')],['مصروفات',etot],['مضاف للتجار',sum('add')],['مخصوم من التجار',sum('pay')]].map(([l,v])=>`<div class="mrow"><span>${l}</span><b>${cur(v)}</b></div>`).join('')
+ $('mon').innerHTML=mo.length?[['نقود مضافة للخزنة',sum('cash')],['مضاف للآجل',sum('def')],['مصروفات',sum('exp')],['أجور العمال',wsum],['مضاف للتجار',sum('add')],['مخصوم من التجار',sum('pay')]].map(([l,v])=>`<div class="mrow"><span>${l}</span><b>${cur(v)}</b></div>`).join('')
   +`<div class="mrow" style="border-top:1px solid var(--line);margin-top:6px;padding-top:10px"><span>صافي حركة الخزنة</span><b class="${mnet<0?'neg':'pos'}">${cur(mnet)}</b></div>`
   +`<div class="mrow"><span>عدد العمليات</span><b>${f(mo.length)}</b></div>`+cmp
   +(etot?`<div class="lbl" style="margin-top:14px">المصروفات حسب التصنيف</div>`+Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([g,v])=>`<div class="mrow"><span>${esc(g)} <span class="lbl">(${f(Math.round(v/etot*100))}٪)</span> ${ptot?dl(v,pcats[g]||0):''}</span><b>${cur(v)}</b></div>`).join(''):''):'<div class="empty">لا توجد عمليات في الشهر ده.</div>';
@@ -392,7 +499,7 @@ function draw(){
 $('exp').onclick=()=>{S.bk=Date.now();save();draw();const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kafia-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()};
 $('bkb').onclick=()=>$('exp').click();
 $('imp').onclick=()=>$('file').click();
-$('file').onchange=e=>{const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!Array.isArray(o.m)||!Array.isArray(o.l))throw 0;if(confirm('هيستبدل البيانات الحالية بالنسخة دي. متأكد؟')){S=o;S.d=S.d||0;S.cl=S.cl||[];S.rx=S.rx||[];save();draw()}}catch(x){alert('الملف مش نسخة احتياطية صحيحة')}};if(e.target.files[0])r.readAsText(e.target.files[0]);e.target.value=''};
+$('file').onchange=e=>{const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!Array.isArray(o.m)||!Array.isArray(o.l))throw 0;if(confirm('هيستبدل البيانات الحالية بالنسخة دي. متأكد؟')){S=o;S.d=S.d||0;S.cl=S.cl||[];S.rx=S.rx||[];S.w=S.w||[];S.at=S.at||{};S.wn=S.wn||1;save();draw()}}catch(x){alert('الملف مش نسخة احتياطية صحيحة')}};if(e.target.files[0])r.readAsText(e.target.files[0]);e.target.value=''};
 
 draw();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
