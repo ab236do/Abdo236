@@ -163,7 +163,12 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </div>
 <div class="tp" id="t5" hidden>
 <div class="box"><div class="lbl">رصيد الآجل (يُضاف للرصيد الشامل)</div><div class="val" id="def"></div></div>
-<button class="btn out" data-a="def">+ إضافة لرصيد الآجل</button>
+<div class="g2"><button class="btn out" data-a="def">+ إضافة لرصيد الآجل</button><button class="btn out" data-a="ddx">– خصم من الآجل</button></div>
+<div class="box"><h2>حركات الآجل</h2>
+ <table><thead><tr><th>البند</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead><tbody id="dl"></tbody></table>
+ <div class="mrow"><span>إجمالي الإضافات</span><b class="pos" id="dta"></b></div>
+ <div class="mrow"><span>إجمالي الخصومات</span><b class="neg" id="dtd"></b></div>
+</div>
 </div>
 
 <div class="tp" id="t6" hidden>
@@ -243,10 +248,10 @@ const num=v=>{v=parseFloat(String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩
 const find=q=>{q=norm(q.trim());return S.m.find(x=>String(x.c)===q)||S.m.find(x=>norm(x.n)===q)||S.m.find(x=>norm(x.n).includes(q))};
 const log=(k,a,w,c)=>S.l.push({d:Date.now(),k,a,w,c});
 const mOf=x=>S.m.find(m=>x.c!==undefined?m.c===x.c:m.n===x.w);
-const KL={cash:'نقود للخزنة',def:'إضافة للآجل',exp:'مصروف',add:'إضافة للتاجر',pay:'خصم من التاجر',draw:'سحب عامل',wpay:'صرف رصيد عامل'};
+const KL={cash:'نقود للخزنة',def:'إضافة للآجل',ddx:'خصم من الآجل',exp:'مصروف',add:'إضافة للتاجر',pay:'خصم من التاجر',draw:'سحب عامل',wpay:'صرف رصيد عامل'};
 /* s=1 يطبّق أثر العملية، s=-1 يلغي أثرها */
 function eff(x,s){const m=mOf(x),a=x.a*s;
- if(x.k==='cash')S.t+=a;else if(x.k==='def')S.d+=a;else if(x.k==='exp')S.t-=a;
+ if(x.k==='cash')S.t+=a;else if(x.k==='def')S.d+=a;else if(x.k==='ddx')S.d-=a;else if(x.k==='exp')S.t-=a;
  else if(x.k==='add'){if(m)m.b+=a}else if(x.k==='pay'){if(m)m.b-=a;S.t-=a}else if(x.k==='draw'||x.k==='wpay')S.t-=a}
 
 /* قفل برقم سري (قفل راحة للشاشة، مش تشفير) */
@@ -261,12 +266,13 @@ let hid=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)h
 const CATS=['مشتريات','رواتب','كهرباء ومياه','إيجار','صيانة','أخرى'];
 const A={
  cash:{t:'إضافة نقود للخزنة',f:[['amt','المبلغ (ج.م)','n'],['note','ملاحظة (اختياري)','t']],go(v){S.t+=v.amt;log('cash',v.amt,v.note)}},
- def:{t:'إضافة لرصيد الآجل',f:[['amt','المبلغ (ج.م)','n'],['note','ملاحظة (اختياري)','t']],go(v){S.d+=v.amt;log('def',v.amt,v.note)}},
+ def:{t:'إضافة لرصيد الآجل',f:[['item','البند (اختياري)','t'],['amt','المبلغ (ج.م)','n']],go(v){S.d+=v.amt;log('def',v.amt,v.item.trim())}},
+ ddx:{t:'خصم من رصيد الآجل (مش من الخزنة)',f:[['item','البند','t'],['amt','المبلغ (ج.م)','n']],go(v){if(!v.item.trim())throw'اكتب البند';S.d-=v.amt;log('ddx',v.amt,v.item.trim())}},
  exp:{t:'تسجيل مصروف',f:[['item','البند','t'],['amt','المبلغ (ج.م)','n'],['cat','التصنيف','s',0,CATS]],go(v){if(!v.item.trim())throw'اكتب البند';S.t-=v.amt;log('exp',v.amt,v.item.trim());if(v.cat)S.l[S.l.length-1].g=v.cat}},
  add:{t:'إضافة للتاجر',f:[['who','اسم التاجر أو كوده','t','l'],['amt','المبلغ (ج.م)','n']],go(v){const m=find(v.who);if(!m)throw'التاجر مش موجود';m.b+=v.amt;log('add',v.amt,m.n,m.c)}},
  pay:{t:'خصم من التاجر (يُخصم من الخزنة)',f:[['who','اسم التاجر أو كوده','t','l'],['amt','المبلغ (ج.م)','n']],go(v){const m=find(v.who);if(!m)throw'التاجر مش موجود';m.b-=v.amt;S.t-=v.amt;log('pay',v.amt,m.n,m.c)}},
  newm:{t:'تاجر جديد',noamt:1,f:[['name','اسم التاجر','t'],['amt','رصيد افتتاحي (اختياري)','n']],go(v){const n=v.name.trim();if(!n)throw'اكتب الاسم';if(S.m.some(x=>x.n===n))throw'الاسم موجود قبل كده';S.m.push({c:S.n++,n,b:v.amt||0})}},
- edit:{t:'تعديل العملية',f:[],i:-1,go(v){const x=S.l[this.i];if(!x)throw'العملية مش موجودة';if(x.k==='exp'&&!String(v.w).trim())throw'اكتب البند';eff(x,-1);x.a=v.amt;if('w' in v)x.w=String(v.w).trim();if('cat' in v){if(v.cat)x.g=v.cat;else delete x.g}eff(x,1)}},
+ edit:{t:'تعديل العملية',f:[],i:-1,go(v){const x=S.l[this.i];if(!x)throw'العملية مش موجودة';if((x.k==='exp'||x.k==='ddx')&&!String(v.w).trim())throw'اكتب البند';eff(x,-1);x.a=v.amt;if('w' in v)x.w=String(v.w).trim();if('cat' in v){if(v.cat)x.g=v.cat;else delete x.g}eff(x,1)}},
  close:{t:'تقفيل اليوم',noamt:1,f:[['act','المبلغ الفعلي في الدرج (ج.م)','n']],
   info(){const t=new Date().toDateString(),td=S.l.filter(x=>new Date(x.d).toDateString()===t),sm=k=>td.filter(x=>x.k===k).reduce((s,x)=>s+x.a,0);
    const r=(l,v,c)=>`<div class="mrow"><span>${l}</span><b${c?' class="'+c+'"':''}>${cur(v)}</b></div>`;
@@ -311,7 +317,7 @@ function del(c){const m=S.m.find(x=>x.c===c);if(m&&confirm('حذف التاجر 
 
 function editOp(i){const x=S.l[i];if(!x)return;
  A.edit.f=[['amt','المبلغ (ج.م)','n']];
- if(x.k==='exp'||x.k==='cash'||x.k==='def')A.edit.f.push(['w',x.k==='exp'?'البند':'ملاحظة','t']);
+ if(x.k==='exp'||x.k==='cash'||x.k==='def'||x.k==='ddx')A.edit.f.push(['w',x.k==='cash'?'ملاحظة':'البند','t']);
  if(x.k==='exp')A.edit.f.push(['cat','التصنيف','s',0,CATS]);
  A.edit.i=i;open('edit',{amt:x.a,w:x.w||'',cat:x.g||''})}
 function useRx(i){const r=S.rx[i];if(r)open('exp',{item:r.n,amt:String(r.a),cat:r.g||''})}
@@ -420,9 +426,13 @@ document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const v=cval();
 const sgn=(el,v)=>el.classList.toggle('neg',v<0);
 
 function draw(){
- const debt=S.m.reduce((s,m)=>s+m.b,0),out=S.l.reduce((s,x)=>s+(x.k==='exp'||x.k==='pay'||x.k==='draw'||x.k==='wpay'?x.a:0),0),all=S.t+S.d+out;
+ const debt=S.m.reduce((s,m)=>s+m.b,0),out=S.l.reduce((s,x)=>s+(x.k==='exp'||x.k==='ddx'||x.k==='pay'||x.k==='draw'||x.k==='wpay'?x.a:0),0),all=S.t+S.d+out;
  $('all').textContent=cur(all);sgn($('all'),all);
  $('def').textContent=cur(S.d);
+ const dls=S.l.map((x,i)=>[x,i]).filter(([x])=>x.k==='def'||x.k==='ddx').reverse();
+ $('dl').innerHTML=dls.length?dls.map(([x,i])=>`<tr><td>${x.w?esc(x.w):'<span class="lbl">بدون بند</span>'}</td><td class="n ${x.k==='def'?'pos':'neg'}">${x.k==='def'?'+':'−'}${f(x.a)}</td><td>${new Date(x.d).toLocaleDateString('ar-EG',{day:'numeric',month:'short'})}</td><td style="white-space:nowrap"><button class="x ed" aria-label="تعديل" onclick="editOp(${i})">✎</button><button class="x" aria-label="حذف" onclick="delOp(${i})">×</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">لا توجد حركات آجل بعد.</td></tr>';
+ $('dta').textContent=cur(dls.filter(([x])=>x.k==='def').reduce((a,[x])=>a+x.a,0));
+ $('dtd').textContent=cur(dls.filter(([x])=>x.k==='ddx').reduce((a,[x])=>a+x.a,0));
  $('av').textContent=cur(S.t);sgn($('av'),S.t);
  $('debt').textContent=cur(debt);
  const net=S.t-debt;$('net').textContent=cur(net);$('net').classList.toggle('neg',net<0);$('net').classList.toggle('pos',net>=0);
@@ -477,7 +487,7 @@ function draw(){
  const dl=(c,pv)=>{const d=Math.round((c-pv)*100)/100;return d>0?`<span class="neg" style="font-size:13px">▲ ${f(d)}</span>`:d<0?`<span class="pos" style="font-size:13px">▼ ${f(-d)}</span>`:''};
  let cmp='';
  if(etot||ptot){const dd=etot-ptot;cmp=`<div class="mrow"><span>مقارنة بالشهر اللي قبله</span><b>`+(!ptot?'<span class="lbl">لا توجد مصروفات قبله</span>':dd>0?`<span class="neg">▲ زادت ${f(dd)} (${f(Math.round(dd/ptot*100))}٪)</span>`:dd<0?`<span class="pos">▼ قلّت ${f(-dd)} (${f(Math.round(-dd/ptot*100))}٪)</span>`:'<span>زي ما هي</span>')+`</b></div>`}
- $('mon').innerHTML=mo.length?[['نقود مضافة للخزنة',sum('cash')],['مضاف للآجل',sum('def')],['مصروفات',sum('exp')],['أجور العمال',wsum],['مضاف للتجار',sum('add')],['مخصوم من التجار',sum('pay')]].map(([l,v])=>`<div class="mrow"><span>${l}</span><b>${cur(v)}</b></div>`).join('')
+ $('mon').innerHTML=mo.length?[['نقود مضافة للخزنة',sum('cash')],['مضاف للآجل',sum('def')],['خصم من الآجل',sum('ddx')],['مصروفات',sum('exp')],['أجور العمال',wsum],['مضاف للتجار',sum('add')],['مخصوم من التجار',sum('pay')]].map(([l,v])=>`<div class="mrow"><span>${l}</span><b>${cur(v)}</b></div>`).join('')
   +`<div class="mrow" style="border-top:1px solid var(--line);margin-top:6px;padding-top:10px"><span>صافي حركة الخزنة</span><b class="${mnet<0?'neg':'pos'}">${cur(mnet)}</b></div>`
   +`<div class="mrow"><span>عدد العمليات</span><b>${f(mo.length)}</b></div>`+cmp
   +(etot?`<div class="lbl" style="margin-top:14px">المصروفات حسب التصنيف</div>`+Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([g,v])=>`<div class="mrow"><span>${esc(g)} <span class="lbl">(${f(Math.round(v/etot*100))}٪)</span> ${ptot?dl(v,pcats[g]||0):''}</span><b>${cur(v)}</b></div>`).join(''):''):'<div class="empty">لا توجد عمليات في الشهر ده.</div>';
