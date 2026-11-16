@@ -133,6 +133,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
  <button class="btn b-teal" data-a="exp">– تسجيل مصروف</button>
  <div class="head" style="margin:4px 0 0"><div class="lbl">مصروفات جاهزة</div><button class="btn out mini" data-a="rx" style="font-size:14px;padding:7px 12px">+ جاهز</button></div>
  <div id="rxl"></div>
+ <div class="mrow" style="border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;margin:8px 0"><span>إجمالي المصروفات كله</span><b class="gold" id="eall">٠</b></div>
  <table><thead><tr><th>البند</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody id="el"></tbody></table>
  <label for="q">إجمالي ما سُحب باسم معيّن</label>
  <input id="q" type="search" placeholder="اكتب الاسم، مثال: عبدالرحمن" autocomplete="off" oninput="draw()">
@@ -472,6 +473,7 @@ function draw(){
   $('wtot').textContent=cur(r2(wt));
  }
  $('rxl').innerHTML=S.rx.length?'<div class="rxw">'+S.rx.map((r,i)=>`<div class="rxc"><button class="use" onclick="useRx(${i})">${esc(r.n)} · ${f(r.a)}</button><button class="x" aria-label="حذف" onclick="delRx(${i})">×</button></div>`).join('')+'</div>':'<div class="lbl" style="margin:6px 0 12px">ضيف مصاريفك الثابتة (إيجار، كهرباء، عمال) وسجّلها بضغطتين.</div>';
+ $('eall').textContent=cur(r2(S.l.filter(x=>x.k==='exp').reduce((t,x)=>t+x.a,0)));
  const q=norm($('q').value.trim()),ex=S.l.filter(x=>x.k==='exp'&&(!q||norm(x.w).includes(q))).reverse();
  $('el').innerHTML=ex.length?ex.map(x=>`<tr><td>${esc(x.w)}${x.g?`<div class="lbl">${esc(x.g)}</div>`:''}</td><td class="n">${f(x.a)}</td><td>${new Date(x.d).toLocaleDateString('ar-EG',{day:'numeric',month:'short'})}</td></tr>`).join(''):`<tr><td colspan="3" class="empty">${q?'مفيش مصروف بالاسم ده':'لا توجد مصروفات مسجلة بعد.'}</td></tr>`;
  $('et').innerHTML=q&&ex.length?`<div class="mrow" style="margin-top:10px"><span>إجمالي ما سُحب (${f(ex.length)})</span><b class="gold">${cur(ex.reduce((t,x)=>t+x.a,0))}</b></div>`:'';
